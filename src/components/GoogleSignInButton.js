@@ -38,8 +38,10 @@ const GoogleSignInButton = ({ onCredential, onError }) => {
   const onErrorRef = useRef(onError);
   const [ready, setReady] = useState(false);
 
-  onCredentialRef.current = onCredential;
-  onErrorRef.current = onError;
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+    onErrorRef.current = onError;
+  }, [onCredential, onError]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
