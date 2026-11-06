@@ -21,7 +21,6 @@ const BankStatementSummary = ({ reportData, onReviewPress }) => {
 
   const expenseCategories = (reportData.categorySummary || []).filter((c) => c.type === 'EXPENSE');
   const incomeCategories = (reportData.categorySummary || []).filter((c) => c.type === 'INCOME');
-  const netAmount = reportData.netAmount != null ? reportData.netAmount : (reportData.totalIncome || 0) - (reportData.totalExpense || 0);
 
   return (
     <View style={styles.container}>
@@ -77,13 +76,6 @@ const BankStatementSummary = ({ reportData, onReviewPress }) => {
         </View>
       </View>
 
-      <View style={styles.netCard}>
-        <Text style={styles.netLabel}>Net Amount</Text>
-        <Text style={[styles.netValue, { color: netAmount >= 0 ? colors.income : colors.expense }]}>
-          {formatCurrency(netAmount)}
-        </Text>
-      </View>
-
     </View>
   );
 };
@@ -136,16 +128,6 @@ const styles = StyleSheet.create({
   incomeCard: { borderColor: colors.incomeTint },
   summaryLabel: { fontSize: 12, color: colors.textMuted, marginBottom: 4 },
   summaryValue: { fontSize: 18, fontWeight: '700' },
-  netCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  netLabel: { fontSize: 12, color: colors.textMuted, marginBottom: 4 },
-  netValue: { fontSize: 20, fontWeight: '700' },
 });
 
 export default BankStatementSummary;

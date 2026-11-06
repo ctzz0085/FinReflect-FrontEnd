@@ -38,12 +38,10 @@ const MainNavigator = () => {
       <Stack.Screen 
         name="BankStatement" 
         component={BankStatementScreen}
-        options={{ header: () => <TopBar dark /> }}
       />
       <Stack.Screen 
         name="BankStatementReport" 
         component={BankStatementReportScreen}
-        options={{ header: () => <TopBar dark /> }}
       />
     </Stack.Navigator>
   );

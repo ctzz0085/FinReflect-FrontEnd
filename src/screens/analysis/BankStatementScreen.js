@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -48,7 +48,15 @@ const formatCurrency = (amount) => {
 
 const BankStatementScreen = () => {
   const navigation = useNavigation();
+  const { params } = useRoute();
   const [activeTab, setActiveTab] = useState(0);
+  const [homeRequest, setHomeRequest] = useState(params?.openUpload);
+
+  // The top bar Home button always returns to the upload tab.
+  if (params?.openUpload !== homeRequest) {
+    setHomeRequest(params?.openUpload);
+    setActiveTab(0);
+  }
 
   // Upload tab state
   const [selectedFile, setSelectedFile] = useState(null);
@@ -463,7 +471,6 @@ const BankStatementScreen = () => {
 
     const expenseCategories = (data.categorySummary || []).filter((c) => c.type === 'EXPENSE');
     const incomeCategories = (data.categorySummary || []).filter((c) => c.type === 'INCOME');
-    const netAmount = data.netAmount != null ? data.netAmount : (data.totalIncome || 0) - (data.totalExpense || 0);
 
     return (
       <View
@@ -489,12 +496,6 @@ const BankStatementScreen = () => {
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Total Expense</Text>
             <Text style={[styles.summaryValue, { color: colors.expense }]}>{formatCurrency(data.totalExpense)}</Text>
-          </View>
-          <View style={[styles.summaryRow, styles.summaryRowNet]}>
-            <Text style={[styles.summaryLabel, { fontWeight: '700' }]}>Net Amount</Text>
-            <Text style={[styles.summaryValue, { fontWeight: '700', color: netAmount >= 0 ? colors.income : colors.expense }]}>
-              {formatCurrency(netAmount)}
-            </Text>
           </View>
         </View>
 
@@ -1059,12 +1060,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 6,
-  },
-  summaryRowNet: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    marginTop: 6,
-    paddingTop: 10,
   },
   // Charts
   chartCard: {
