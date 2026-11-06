@@ -13,6 +13,12 @@ import { transactionsAPI } from '../../api/transactions';
 
 const FILTERS = ['week', 'month', 'year', 'custom'];
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
 const IncomeHistory = () => {
   const { refreshKey } = useTab();
 
@@ -23,6 +29,7 @@ const IncomeHistory = () => {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [customSubmitted, setCustomSubmitted] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
 
   const cycleFilterMode = () => {
     setFilterMode((prev) => {
@@ -51,11 +58,25 @@ const IncomeHistory = () => {
 
   useEffect(() => {
     setLoading(true);
+    setExpandedCategories(new Set());
     transactionsAPI.getIncomeTransactions(buildParams())
       .then((res) => setIncomeList(res.data || []))
       .catch((err) => console.error('Error fetching income history', err))
       .finally(() => setLoading(false));
   }, [refreshKey, filterMode, customSubmitted]);
+
+  const toggleCategory = (categoryId) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
+  };
+
+  const getTransactionsForCategory = (categoryId) => {
+    return incomeList.filter((i) => i.category?.id === categoryId);
+  };
 
   const groupedIncome = useMemo(() => {
     return Object.values(
@@ -151,12 +172,43 @@ const IncomeHistory = () => {
           <Text style={styles.emptyText}>No income data for this period.</Text>
         </View>
       ) : (
-        sortedIncome.map((income) => (
-          <View key={income.id} style={styles.incomeItem}>
-            <Text style={styles.itemName}>{income.name}</Text>
-            <Text style={styles.itemAmount}>₹{income.amount.toFixed(2)}</Text>
-          </View>
-        ))
+        sortedIncome.map((income) => {
+          const isExpanded = expandedCategories.has(income.id);
+          const categoryTransactions = isExpanded ? getTransactionsForCategory(income.id) : [];
+          return (
+            <View key={income.id}>
+              <View style={styles.incomeItem}>
+                <View style={styles.itemLeft}>
+                  <TouchableOpacity
+                    style={styles.expandButton}
+                    onPress={() => toggleCategory(income.id)}
+                  >
+                    <Text style={styles.expandButtonText}>{isExpanded ? '▼' : '▶'}</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.itemName}>{income.name}</Text>
+                </View>
+                <Text style={styles.itemAmount}>₹{income.amount.toFixed(2)}</Text>
+              </View>
+              {isExpanded && categoryTransactions.length > 0 && (
+                <View style={styles.transactionsList}>
+                  {categoryTransactions.map((txn, idx) => (
+                    <View key={txn.id || idx} style={styles.transactionRow}>
+                      <View style={styles.transactionInfo}>
+                        <Text style={styles.transactionDesc}>
+                          {txn.description || 'No description'}
+                        </Text>
+                        <Text style={styles.transactionDate}>
+                          {formatDate(txn.date || txn.timestamp)}
+                        </Text>
+                      </View>
+                      <Text style={styles.transactionAmount}>₹{txn.amount.toFixed(2)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          );
+        })
       )}
     </View>
   );
@@ -225,8 +277,60 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 8,
   },
+  itemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  expandButton: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandButtonText: {
+    color: '#6b7280',
+    fontSize: 12,
+  },
   itemName: { fontSize: 14, fontWeight: '500', color: '#15803d', textTransform: 'capitalize' },
   itemAmount: { fontSize: 14, fontWeight: '600', color: '#15803d' },
+  transactionsList: {
+    marginLeft: 20,
+    borderLeftWidth: 2,
+    borderLeftColor: '#bbf7d0',
+    paddingLeft: 12,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  transactionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginTop: 4,
+  },
+  transactionInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  transactionDesc: {
+    fontSize: 13,
+    color: '#166534',
+    fontWeight: '400',
+  },
+  transactionDate: {
+    fontSize: 11,
+    color: '#86efac',
+    marginTop: 2,
+  },
+  transactionAmount: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#166534',
+  },
 });
 
 export default IncomeHistory;

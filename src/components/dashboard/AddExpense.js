@@ -8,7 +8,11 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Modal,
+  Linking,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useTab } from '../../context/TabContext';
@@ -21,6 +25,9 @@ const AddExpense = ({ onRefresh }) => {
   const [expenseCategories, setExpenseCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -28,6 +35,10 @@ const AddExpense = ({ onRefresh }) => {
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isSavingCategory, setIsSavingCategory] = useState(false);
+
+  const [showUpiSheet, setShowUpiSheet] = useState(false);
+  const [savedAmount, setSavedAmount] = useState('');
+  const [upiId, setUpiId] = useState('');
 
   const fetchCategories = () => {
     setCategoriesLoading(true);
@@ -48,6 +59,8 @@ const AddExpense = ({ onRefresh }) => {
     fetchCategories();
     setSelectedCategory(null);
     setAmount('');
+    setDescription('');
+    setSelectedDate(new Date());
     setShowCategoryDropdown(false);
   }, [refreshKey]);
 
@@ -85,15 +98,18 @@ const AddExpense = ({ onRefresh }) => {
     const payload = {
       amount: Number(amount),
       category: { name: selectedCategory.name },
-      description: 'Expense added from mobile',
-      timestamp: new Date().toISOString(),
+      description: description.trim() || selectedCategory.name,
+      timestamp: selectedDate.toISOString(),
     };
 
     setLoading(true);
     try {
       await transactionsAPI.addExpense(payload);
-      Alert.alert('Success', 'Expense added successfully ✅');
+      setSavedAmount(amount);
+      setShowUpiSheet(true);
       setAmount('');
+      setDescription('');
+      setSelectedDate(new Date());
       setSelectedCategory(null);
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -102,6 +118,22 @@ const AddExpense = ({ onRefresh }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenUpi = () => {
+    const params = new URLSearchParams({ cu: 'INR' });
+    if (savedAmount) params.append('am', savedAmount);
+    if (upiId.trim()) params.append('pa', upiId.trim());
+    const url = `upi://pay?${params.toString()}`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert('No UPI App', 'No UPI app found on this device.');
+    });
+  };
+
+  const handleDismissUpi = () => {
+    setShowUpiSheet(false);
+    setSavedAmount('');
+    setUpiId('');
   };
 
   return (
@@ -169,6 +201,43 @@ const AddExpense = ({ onRefresh }) => {
           />
         </View>
 
+        {/* Description */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Description (optional)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter description"
+            value={description}
+            onChangeText={setDescription}
+          />
+        </View>
+
+        {/* Date Picker */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Date</Text>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={[styles.dropdownText, { color: '#1f2937' }]}>
+              {selectedDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+            </Text>
+            <Icon name="calendar-today" size={20} color="#6b7280" />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              maximumDate={new Date()}
+              onChange={(event, date) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (date) setSelectedDate(date);
+              }}
+            />
+          )}
+        </View>
+
         {/* Add Expense Button */}
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -215,9 +284,128 @@ const AddExpense = ({ onRefresh }) => {
           </View>
         </View>
       )}
+      {/* UPI Bottom Sheet */}
+      <Modal
+        visible={showUpiSheet}
+        transparent
+        animationType="slide"
+        onRequestClose={handleDismissUpi}
+      >
+        <TouchableOpacity
+          style={upiStyles.overlay}
+          activeOpacity={1}
+          onPress={handleDismissUpi}
+        >
+          <View onStartShouldSetResponder={() => true} style={upiStyles.sheet}>
+            <View style={upiStyles.handle} />
+            <Text style={upiStyles.sheetTitle}>Expense Saved ✅</Text>
+            <Text style={upiStyles.sheetSubtitle}>Pay ₹{savedAmount} via UPI?</Text>
+
+            <View style={upiStyles.upiIdGroup}>
+              <Text style={upiStyles.upiLabel}>UPI ID (optional)</Text>
+              <TextInput
+                style={upiStyles.upiInput}
+                placeholder="e.g. merchant@upi"
+                placeholderTextColor="#9ca3af"
+                value={upiId}
+                onChangeText={setUpiId}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <TouchableOpacity style={upiStyles.payButton} onPress={handleOpenUpi}>
+              <Text style={upiStyles.payButtonText}>Open UPI App</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={upiStyles.skipButton} onPress={handleDismissUpi}>
+              <Text style={upiStyles.skipButtonText}>Skip</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
+
+const upiStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    paddingTop: 12,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#d1d5db',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  sheetTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1f2937',
+    textAlign: 'center',
+  },
+  sheetSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 20,
+  },
+  upiIdGroup: {
+    marginBottom: 16,
+  },
+  upiLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 6,
+  },
+  upiInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    backgroundColor: '#f9fafb',
+    color: '#1f2937',
+  },
+  payButton: {
+    backgroundColor: '#7c3aed',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  payButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  skipButton: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  skipButtonText: {
+    color: '#6b7280',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
 
 const styles = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 16 },

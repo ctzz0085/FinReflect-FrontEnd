@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
   ActivityIndicator,
+  Alert,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../api/auth';
+import { useAuth } from '../../context/AuthContext';
+
+const backgroundImage = require('../../../assets/images/login-background.jpg');
+const PLACEHOLDER_COLOR = '#86948a';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -26,9 +30,21 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
+    // Dev admin bypass - no API call
+    if (username.trim() === 'admin' && password === 'admin123') {
+      await login({
+        userId: 0,
+        applicationId: 'expense-app',
+        email: 'admin@dev.local',
+        phoneNumber: '',
+        role: 'ADMIN',
+      }, 'dev-admin-token');
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await authAPI.login({ identifier: username, password });
+      const res = await authAPI.login({ email: username, password });
 
       if (!res?.token) {
         Alert.alert('Error', 'Invalid credentials');
@@ -52,83 +68,90 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.card}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Expense Tracker</Text>
-            <Text style={styles.subtitle}>Manage your finances efficiently</Text>
-          </View>
-
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Username */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email ID / Phone Number</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Email, Phone, or User ID"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-              />
+    <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardView} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.card}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>FinReflect</Text>
+              <Text style={styles.subtitle}>Manage your finances efficiently</Text>
             </View>
 
-            {/* Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
+            {/* Form */}
+            <View style={styles.form}>
+              {/* Username */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Email ID / Phone Number</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email, Phone, or User ID"
+                  placeholderTextColor={PLACEHOLDER_COLOR}
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                />
+              </View>
+
+              {/* Password */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor={PLACEHOLDER_COLOR}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {/* Login Button */}
+              <TouchableOpacity 
+                style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#00422b" />
+                ) : (
+                  <Text style={styles.loginButtonText}>Login</Text>
+                )}
+              </TouchableOpacity>
             </View>
 
-            {/* Login Button */}
-            <TouchableOpacity 
-              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#000000" />
-              ) : (
-                <Text style={styles.loginButtonText}>Login</Text>
-              )}
-            </TouchableOpacity>
+            {/* Footer */}
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.linkText}>
+                  Don't have an account? <Text style={styles.linkTextBold}>Register</Text>
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.forgotButton}>
+                <Text style={styles.linkTextBold}>Forgot your password?</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.linkText}>
-                Don't have an account? <Text style={styles.linkTextBold}>Register</Text>
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.forgotButton}>
-              <Text style={styles.linkTextBold}>Forgot your password?</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0fdf4', // green-50 equivalent
+    backgroundColor: '#0b1326',
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -136,13 +159,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
+    backgroundColor: 'rgba(19, 27, 46, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(78, 222, 163, 0.3)',
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.45,
+    shadowRadius: 28,
+    elevation: 8,
     padding: 32,
     maxWidth: 400,
     width: '100%',
@@ -155,12 +180,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937', // gray-800 equivalent
+    color: '#dae2fd',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#6b7280', // gray-500 equivalent
+    color: '#bbcabf',
   },
   form: {
     marginBottom: 24,
@@ -171,30 +196,36 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151', // gray-700 equivalent
+    color: '#bbcabf',
     marginBottom: 8,
   },
   input: {
-    borderWidth: 2,
-    borderColor: '#d1d5db', // gray-300 equivalent
-    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3c4a42',
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
-    backgroundColor: '#ffffff',
+    color: '#dae2fd',
+    backgroundColor: '#0b1326',
   },
   loginButton: {
-    backgroundColor: '#4ade80', // green-400 equivalent
+    backgroundColor: '#10b981',
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 999,
     alignItems: 'center',
     marginTop: 24,
+    shadowColor: '#10b981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
   },
   loginButtonDisabled: {
-    backgroundColor: '#d1d5db',
+    backgroundColor: '#2d3449',
+    shadowOpacity: 0,
   },
   loginButtonText: {
-    color: '#000000',
+    color: '#00422b',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -203,11 +234,11 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#bbcabf',
     marginBottom: 8,
   },
   linkTextBold: {
-    color: '#2563eb', // blue-600 equivalent
+    color: '#4edea3',
     fontWeight: '500',
   },
   forgotButton: {

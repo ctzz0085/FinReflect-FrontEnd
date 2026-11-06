@@ -1,9 +1,15 @@
 import axios from 'axios';
 import { getToken, getUser, logout } from '../utils/auth';
+import getEnvVars from '../config/env';
+
+const { API_BASE_URL } = getEnvVars();
 
 const api = axios.create({
-  baseURL: 'http://localhost:8090/',
+  baseURL: API_BASE_URL,
   timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 api.interceptors.request.use(
@@ -11,23 +17,36 @@ api.interceptors.request.use(
     const token = await getToken();
     const user = await getUser();
     
-    console.log('API Request:', config.method?.toUpperCase(), config.url);
+    // If sending FormData, remove Content-Type header to let Axios set it automatically
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+      console.log('=== API REQUEST (FormData) ===');
+      console.log('Method:', config.method?.toUpperCase());
+      console.log('URL:', config.baseURL + config.url);
+      console.log('FormData detected - Content-Type will be set automatically');
+    } else {
+      console.log('=== API REQUEST ===');
+      console.log('Method:', config.method?.toUpperCase());
+      console.log('URL:', config.baseURL + config.url);
+      console.log('Request Body:', JSON.stringify(config.data, null, 2));
+    }
+    
     console.log('Token:', token ? 'Bearer ' + token.substring(0, 20) + '...' : 'No token');
     console.log('User:', user);
-    console.log('Request Body:', JSON.stringify(config.data));
     
-    if (token) {
+    if (token && token !== 'dev-admin-token') {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    if (user?.userId) {
+    if (user?.userId && token !== 'dev-admin-token') {
       config.headers['X-User-Id'] = user.userId.toString();
       console.log('X-User-Id header set to:', user.userId);
-    } else {
+    } else if (token !== 'dev-admin-token') {
       console.warn('No userId found in user object!');
     }
     
-    console.log('Final headers:', JSON.stringify(config.headers));
+    console.log('Final headers:', JSON.stringify(config.headers, null, 2));
+    console.log('==================');
     
     return config;
   },
@@ -36,14 +55,19 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     console.log('API Response Error:', error?.response?.status, error?.response?.statusText);
     console.log('Error URL:', error?.config?.url);
-    console.log('Error Headers:', error?.response?.headers);
+    console.log('Error Data:', JSON.stringify(error?.response?.data));
+    console.log('Request Data:', JSON.stringify(error?.config?.data));
+    console.log('Request Headers:', JSON.stringify(error?.config?.headers));
     
     if (error?.response?.status === 401) {
-      console.log('401 Unauthorized - logging out');
-      logout();
+      const token = await getToken();
+      if (token !== 'dev-admin-token') {
+        console.log('401 Unauthorized - logging out');
+        logout();
+      }
     }
     return Promise.reject(error);
   }

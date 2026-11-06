@@ -17,6 +17,12 @@ const getPercentageStyle = (percentage) => {
   return { container: styles.itemGreen, text: styles.itemTextGreen };
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
 const ExpenseHistory = () => {
   const { refreshKey } = useTab();
 
@@ -27,6 +33,7 @@ const ExpenseHistory = () => {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [customSubmitted, setCustomSubmitted] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
 
   const cycleFilterMode = () => {
     setFilterMode((prev) => {
@@ -55,11 +62,25 @@ const ExpenseHistory = () => {
 
   useEffect(() => {
     setLoading(true);
+    setExpandedCategories(new Set());
     transactionsAPI.getExpenseTransactions(buildParams())
       .then((res) => setExpenses(res.data || []))
       .catch((err) => console.error('Error fetching expense history', err))
       .finally(() => setLoading(false));
   }, [refreshKey, filterMode, customSubmitted]);
+
+  const toggleCategory = (categoryId) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
+  };
+
+  const getTransactionsForCategory = (categoryId) => {
+    return expenses.filter((e) => e.category?.id === categoryId);
+  };
 
   const aggregatedExpenses = useMemo(() => {
     return Object.values(
@@ -169,13 +190,42 @@ const ExpenseHistory = () => {
       ) : (
         sortedExpenses.map((item) => {
           const { container, text } = getPercentageStyle(item.percentage);
+          const isExpanded = expandedCategories.has(item.id);
+          const categoryTransactions = isExpanded ? getTransactionsForCategory(item.id) : [];
           return (
-            <View key={item.id} style={[styles.expenseItem, container]}>
-              <View>
-                <Text style={[styles.itemName, text]}>{item.name}</Text>
-                <Text style={[styles.itemPercentage, text]}>({item.percentage}%)</Text>
+            <View key={item.id}>
+              <View style={[styles.expenseItem, container]}>
+                <View style={styles.itemLeft}>
+                  <TouchableOpacity
+                    style={styles.expandButton}
+                    onPress={() => toggleCategory(item.id)}
+                  >
+                    <Text style={styles.expandButtonText}>{isExpanded ? '▼' : '▶'}</Text>
+                  </TouchableOpacity>
+                  <View>
+                    <Text style={[styles.itemName, text]}>{item.name}</Text>
+                    <Text style={[styles.itemPercentage, text]}>({item.percentage}%)</Text>
+                  </View>
+                </View>
+                <Text style={[styles.itemAmount, text]}>₹{item.amount.toFixed(2)}</Text>
               </View>
-              <Text style={[styles.itemAmount, text]}>₹{item.amount.toFixed(2)}</Text>
+              {isExpanded && categoryTransactions.length > 0 && (
+                <View style={styles.transactionsList}>
+                  {categoryTransactions.map((txn, idx) => (
+                    <View key={txn.id || idx} style={styles.transactionRow}>
+                      <View style={styles.transactionInfo}>
+                        <Text style={styles.transactionDesc}>
+                          {txn.description || 'No description'}
+                        </Text>
+                        <Text style={styles.transactionDate}>
+                          {formatDate(txn.timestamp || txn.date)}
+                        </Text>
+                      </View>
+                      <Text style={styles.transactionAmount}>₹{txn.amount.toFixed(2)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           );
         })
@@ -246,9 +296,61 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 8,
   },
+  itemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  expandButton: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandButtonText: {
+    color: '#6b7280',
+    fontSize: 12,
+  },
   itemName: { fontSize: 14, fontWeight: '500', textTransform: 'capitalize' },
   itemPercentage: { fontSize: 11, opacity: 0.75 },
   itemAmount: { fontSize: 14, fontWeight: '600' },
+  transactionsList: {
+    marginLeft: 20,
+    borderLeftWidth: 2,
+    borderLeftColor: '#e2e8f0',
+    paddingLeft: 12,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  transactionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginTop: 4,
+  },
+  transactionInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  transactionDesc: {
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '400',
+  },
+  transactionDate: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  transactionAmount: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+  },
   itemRed: { backgroundColor: '#fee2e2' },
   itemTextRed: { color: '#b91c1c' },
   itemYellow: { backgroundColor: '#fef9c3' },

@@ -1,18 +1,22 @@
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { Platform } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LandingScreen from '../screens/auth/LandingScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const AuthNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#ffffff' },
+        contentStyle: { backgroundColor: '#ffffff' },
       }}
     >
+      {Platform.OS === 'web' && (
+        <Stack.Screen name="Landing" component={LandingScreen} options={{ title: 'FinReflect' }} />
+      )}
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>

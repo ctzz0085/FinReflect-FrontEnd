@@ -82,7 +82,7 @@ const ManageCategoriesScreen = () => {
     setLoading(true);
     try {
       if (activeTab === 'income') {
-        await transactionsAPI.updateIncomeCategory(editingCategory.id, editCategoryName.trim());
+        await transactionsAPI.updateIncomeCategory(editingCategory.id, editCategoryName.trim(), editingCategory.userId);
       } else {
         await transactionsAPI.updateExpenseCategory(editingCategory.id, editCategoryName.trim());
       }

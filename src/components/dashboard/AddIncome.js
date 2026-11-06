@@ -8,7 +8,9 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAuth } from '../../context/AuthContext';
 import { useTab } from '../../context/TabContext';
@@ -22,6 +24,9 @@ const AddIncome = ({ onRefresh }) => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -49,6 +54,8 @@ const AddIncome = ({ onRefresh }) => {
     fetchCategories();
     setSelectedCategory(null);
     setAmount('');
+    setDescription('');
+    setSelectedDate(new Date());
     setShowCategoryDropdown(false);
   }, [refreshKey]);
 
@@ -85,8 +92,8 @@ const AddIncome = ({ onRefresh }) => {
 
     const payload = {
       amount: Number(amount),
-      description: 'Income added from mobile',
-      date: new Date().toISOString().replace('Z', ''),
+      description: description.trim() || selectedCategory.name,
+      date: selectedDate.toISOString().replace('Z', ''),
       userId: user?.userId,
       category: { name: selectedCategory.name },
     };
@@ -97,8 +104,10 @@ const AddIncome = ({ onRefresh }) => {
     try {
       const res = await transactionsAPI.addIncome(payload);
       console.log('AddIncome success:', res?.data);
-      Alert.alert('Success', 'Income added successfully ✅');
+      Alert.alert('Success', 'Income added successfully \u2705');
       setAmount('');
+      setDescription('');
+      setSelectedDate(new Date());
       setSelectedCategory(null);
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -174,6 +183,43 @@ const AddIncome = ({ onRefresh }) => {
             onChangeText={setAmount}
             keyboardType="numeric"
           />
+        </View>
+
+        {/* Description */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Description (optional)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter description"
+            value={description}
+            onChangeText={setDescription}
+          />
+        </View>
+
+        {/* Date Picker */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Date</Text>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={[styles.dropdownText, { color: '#1f2937' }]}>
+              {selectedDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+            </Text>
+            <Icon name="calendar-today" size={20} color="#6b7280" />
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              maximumDate={new Date()}
+              onChange={(event, date) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (date) setSelectedDate(date);
+              }}
+            />
+          )}
         </View>
 
         {/* Pay Button */}

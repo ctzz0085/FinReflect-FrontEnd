@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import { colors } from '../theme/colors';
 
-const TopBar = () => {
+const TopBar = ({ dark = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigation = useNavigation();
   const { logout, user } = useAuth();
@@ -20,16 +21,17 @@ const TopBar = () => {
     { id: 'categories', title: '📁 Manage Categories', onPress: () => { setIsMenuOpen(false); navigation.navigate('ManageCategories'); } },
     { id: 'transactions', title: '📝 Manage Transactions', onPress: () => { setIsMenuOpen(false); navigation.navigate('ManageTransactions'); } },
     { id: 'analysis', title: '📊 Financial Analysis', onPress: () => { setIsMenuOpen(false); navigation.navigate('FinancialAnalysis'); } },
+    { id: 'bankStatement', title: '🏦 Bank Statement', onPress: () => { setIsMenuOpen(false); navigation.navigate('BankStatement'); } },
     { id: 'logout', title: '🚪 Logout', onPress: handleLogout },
   ];
 
   return (
     <>
-      <View style={styles.container}>
+      <View style={[styles.container, dark && styles.containerDark]}>
         {/* Left: User ID */}
         <View style={styles.userContainer}>
-          <Text style={styles.userLabel}>User:</Text>
-          <Text style={styles.userName}>{userLabel || '-'}</Text>
+          <Text style={[styles.userLabel, dark && styles.userLabelDark]}>User:</Text>
+          <Text style={[styles.userName, dark && styles.userNameDark]}>{userLabel || '-'}</Text>
         </View>
 
         {/* Right: Hamburger menu (3 lines) */}
@@ -38,9 +40,9 @@ const TopBar = () => {
           onPress={() => setIsMenuOpen(true)}
         >
           <View style={styles.hamburger}>
-            <View style={styles.line} />
-            <View style={styles.line} />
-            <View style={styles.line} />
+            <View style={[styles.line, dark && styles.lineDark]} />
+            <View style={[styles.line, dark && styles.lineDark]} />
+            <View style={[styles.line, dark && styles.lineDark]} />
           </View>
         </TouchableOpacity>
       </View>
@@ -108,6 +110,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+  },
+  containerDark: {
+    backgroundColor: colors.surface,
+    borderBottomColor: colors.border,
+  },
+  userLabelDark: {
+    color: colors.textMuted,
+  },
+  userNameDark: {
+    color: colors.text,
+  },
+  lineDark: {
+    backgroundColor: colors.text,
   },
   userContainer: {
     flexDirection: 'row',
