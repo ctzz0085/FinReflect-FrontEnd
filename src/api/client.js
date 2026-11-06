@@ -6,7 +6,8 @@ const { API_BASE_URL } = getEnvVars();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  // The hosted server sleeps when idle and can take about a minute to wake.
+  timeout: 90000,
   headers: {
     'Content-Type': 'application/json',
   },

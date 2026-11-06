@@ -47,7 +47,7 @@ export const transactionsAPI = {
   
   // ===== BANK STATEMENT APIs =====
   uploadBankStatement: (formData) => api.post('/analysis/bank-statement/upload', formData, {
-    timeout: 60000,
+    timeout: 120000,
   }),
   getBankStatementReport: (statementId) => api.get(`/analysis/bank-statement/report?statementId=${statementId}`),
   getBankStatementHistory: () => api.get('/analysis/bank-statement/history'),

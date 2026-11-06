@@ -13,14 +13,18 @@ import { useAuth } from '../../context/AuthContext';
 
 const backgroundImage = require('../../../assets/images/login-background.jpg');
 
+const SLOW_REQUEST_MS = 5000;
+
 const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [slow, setSlow] = useState(false);
   const { login } = useAuth();
 
   const handleGoogleCredential = async (idToken) => {
     setError('');
     setLoading(true);
+    const slowTimer = setTimeout(() => setSlow(true), SLOW_REQUEST_MS);
     try {
       const res = await authAPI.googleLogin(idToken);
 
@@ -44,6 +48,8 @@ const LoginScreen = () => {
         || 'Google sign-in failed. Please try again.'
       );
     } finally {
+      clearTimeout(slowTimer);
+      setSlow(false);
       setLoading(false);
     }
   };
@@ -61,6 +67,7 @@ const LoginScreen = () => {
           <GoogleSignInButton onCredential={handleGoogleCredential} onError={setError} />
 
           {loading && <ActivityIndicator style={styles.status} color="#4edea3" />}
+          {slow && <Text style={styles.hint}>Waking up the server. This can take up to a minute.</Text>}
           {!!error && <Text style={styles.error}>{error}</Text>}
         </View>
       </ScrollView>
@@ -109,6 +116,12 @@ const styles = StyleSheet.create({
   },
   status: {
     marginTop: 16,
+  },
+  hint: {
+    color: '#bbcabf',
+    fontSize: 14,
+    marginTop: 12,
+    textAlign: 'center',
   },
   error: {
     color: '#ffb4ab',
