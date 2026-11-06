@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }) => {
       ]);
       
       console.log('AuthContext - Stored User:', storedUser);
-      console.log('AuthContext - Stored Token:', storedToken);
       console.log('AuthContext - User ID:', storedUser?.userId);
       console.log('AuthContext - User Email:', storedUser?.email);
       
