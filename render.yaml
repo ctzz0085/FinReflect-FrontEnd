@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: finreflect-app
+    runtime: static
+    branch: feature/bank-statement-ui
+    buildCommand: npm ci && npx expo export --platform web
+    staticPublishPath: dist
