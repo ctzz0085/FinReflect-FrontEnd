@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.expenseTint,
+    borderColor: colors.amberBorder,
   },
   label: {
     fontSize: 12,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.expense,
+    color: colors.amber,
   },
   unit: {
     fontSize: 13,
