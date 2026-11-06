@@ -121,7 +121,6 @@ const BankStatementScreen = () => {
         setAllExpenseCategories(categories.map(cat => cat.name).sort());
       })
       .catch((err) => {
-        console.error('Error fetching expense categories', err);
         setAllExpenseCategories([]);
       });
     
@@ -132,7 +131,6 @@ const BankStatementScreen = () => {
         setAllIncomeCategories(categories.map(cat => cat.name).sort());
       })
       .catch((err) => {
-        console.error('Error fetching income categories', err);
         setAllIncomeCategories([]);
       });
   }, []);
@@ -142,7 +140,6 @@ const BankStatementScreen = () => {
     transactionsAPI.getBankStatementHistory()
       .then((res) => setHistory(res.data || []))
       .catch((err) => {
-        console.error('Error fetching bank statement history', err);
         setHistory([]);
       })
       .finally(() => setHistoryLoading(false));
@@ -177,8 +174,7 @@ const BankStatementScreen = () => {
         setPasswordError('');
         setShowPasswordModal((await isPdfEncrypted(asset)) === true);
       }
-    } catch (err) {
-      console.error('File picker error:', err);
+    } catch {
       Alert.alert('Error', 'Failed to pick file');
     }
   };
@@ -246,7 +242,6 @@ const BankStatementScreen = () => {
         setPassword('');
       }
     } catch (err) {
-      console.error('Upload error:', err);
       const data = err.response?.data;
       showUploadFailure(data?.summary || data?.message || data?.error || err.message || 'Upload failed');
     } finally {
@@ -265,8 +260,7 @@ const BankStatementScreen = () => {
     try {
       const res = await transactionsAPI.getBankStatementReport(statementId);
       setHistoryReport(res.data);
-    } catch (err) {
-      console.error('Error fetching report:', err);
+    } catch {
       Alert.alert('Error', 'Failed to load report');
       setSelectedHistory(null);
       setHistoryReport(null);
@@ -276,7 +270,6 @@ const BankStatementScreen = () => {
   };
 
   const handleDeleteStatement = async (statementId, fileName) => {
-    console.log('Delete button clicked for:', statementId, fileName);
     
     // Platform-specific confirmation
     let confirmed = false;
@@ -303,12 +296,10 @@ const BankStatementScreen = () => {
               style: 'destructive',
               onPress: async () => {
                 try {
-                  console.log('Deleting statement:', statementId);
                   await transactionsAPI.deleteBankStatement(statementId);
                   Alert.alert('Success', 'Statement deleted successfully');
                   fetchHistory();
                 } catch (err) {
-                  console.error('Error deleting statement:', err);
                   const msg = err.response?.data?.message || err.message || 'Failed to delete statement';
                   Alert.alert('Error', msg);
                 }
@@ -323,12 +314,10 @@ const BankStatementScreen = () => {
     // Handle web confirmation
     if (confirmed) {
       try {
-        console.log('Deleting statement:', statementId);
         await transactionsAPI.deleteBankStatement(statementId);
         window.alert('Statement deleted successfully');
         fetchHistory();
       } catch (err) {
-        console.error('Error deleting statement:', err);
         const msg = err.response?.data?.message || err.message || 'Failed to delete statement';
         window.alert('Error: ' + msg);
       }
@@ -407,7 +396,6 @@ const BankStatementScreen = () => {
       Alert.alert('Success', 'Category created and transaction updated');
       closeEditModal();
     } catch (err) {
-      console.error('Error creating category:', err);
       const msg = err.response?.data?.message || err.message || 'Failed to create category';
       Alert.alert('Error', msg);
     } finally {
@@ -453,7 +441,6 @@ const BankStatementScreen = () => {
       Alert.alert('Success', 'Transaction updated successfully');
       closeEditModal();
     } catch (err) {
-      console.error('Transaction update error:', err);
       const msg = err.response?.data?.message || err.message || 'Failed to update transaction';
       Alert.alert('Error', msg);
     } finally {
@@ -713,7 +700,6 @@ const BankStatementScreen = () => {
                       style={styles.deleteButton}
                       activeOpacity={0.7}
                       onPress={() => {
-                        console.log('Delete TouchableOpacity pressed');
                         handleDeleteStatement(item.statementId, item.fileName);
                       }}
                     >

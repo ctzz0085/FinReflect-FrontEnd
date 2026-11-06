@@ -16,8 +16,7 @@ export const isPdfEncrypted = async (asset) => {
       }
     }
     return false;
-  } catch (err) {
-    console.warn('Could not check PDF encryption', err);
+  } catch {
     return null;
   }
 };

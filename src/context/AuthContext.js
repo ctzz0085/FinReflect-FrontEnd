@@ -28,25 +28,18 @@ export const AuthProvider = ({ children }) => {
         getToken()
       ]);
       
-      console.log('AuthContext - Stored User:', storedUser);
-      console.log('AuthContext - User ID:', storedUser?.userId);
-      console.log('AuthContext - User Email:', storedUser?.email);
       
       if (storedUser && storedToken) {
         setUserState(storedUser);
         setTokenState(storedToken);
       }
-    } catch (error) {
-      console.error('Error loading auth data:', error);
+    } catch {
     } finally {
       setLoading(false);
     }
   };
 
   const login = async (userData, authToken) => {
-    console.log('AuthContext - Login - User Data:', userData);
-    console.log('AuthContext - Login - User ID:', userData?.userId);
-    console.log('AuthContext - Login - User Email:', userData?.email);
     
     await Promise.all([
       setUser(userData),

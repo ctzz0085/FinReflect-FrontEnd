@@ -36,7 +36,6 @@ const ManageCategoriesScreen = () => {
       setIncomeCategories(incomeRes.data || []);
       setExpenseCategories(expenseRes.data || []);
     } catch (err) {
-      console.error('Error fetching categories', err);
       const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch categories';
       Alert.alert('Error', errorMsg);
     } finally {
@@ -60,7 +59,6 @@ const ManageCategoriesScreen = () => {
       setNewCategoryName('');
       await fetchCategories();
     } catch (err) {
-      console.error('Error adding category', err);
       const errorMsg = err.response?.data?.message || err.message || 'Failed to add category';
       Alert.alert('Error', errorMsg);
     } finally {
@@ -90,7 +88,6 @@ const ManageCategoriesScreen = () => {
       setEditCategoryName('');
       await fetchCategories();
     } catch (err) {
-      console.error('Error updating category', err);
       const errorMsg = err.response?.data?.message || err.message || 'Failed to update category';
       Alert.alert('Error', errorMsg);
     } finally {
@@ -110,19 +107,13 @@ const ManageCategoriesScreen = () => {
           onPress: async () => {
             setLoading(true);
             try {
-              console.log('Deleting category:', category.id, 'Type:', activeTab);
               if (activeTab === 'income') {
                 const res = await transactionsAPI.deleteIncomeCategory(category.id);
-                console.log('Delete income response:', res?.data);
               } else {
                 const res = await transactionsAPI.deleteExpenseCategory(category.id);
-                console.log('Delete expense response:', res?.data);
               }
               await fetchCategories();
             } catch (err) {
-              console.error('Error deleting category', err);
-              console.error('Delete error status:', err.response?.status);
-              console.error('Delete error data:', JSON.stringify(err.response?.data));
               const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to delete category';
               Alert.alert('Error', errorMsg);
             } finally {

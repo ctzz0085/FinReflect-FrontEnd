@@ -15,7 +15,6 @@ const Balance = () => {
         setBalance(response.data || 0);
       })
       .catch((err) => {
-        console.error('Error fetching balance:', err);
         setBalance(0);
       })
       .finally(() => setLoading(false));

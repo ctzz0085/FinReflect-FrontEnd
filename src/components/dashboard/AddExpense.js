@@ -49,7 +49,6 @@ const AddExpense = ({ onRefresh }) => {
         return userCategories;
       })
       .catch((err) => {
-        console.error('Error fetching expense categories', err);
         return [];
       })
       .finally(() => setCategoriesLoading(false));

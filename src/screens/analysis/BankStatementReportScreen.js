@@ -74,7 +74,6 @@ const BankStatementReportScreen = () => {
         setAllCategories(categories.map(cat => cat.name).sort());
       })
       .catch((err) => {
-        console.error('Error fetching categories', err);
         setAllCategories([]);
       });
   }, []);
@@ -84,8 +83,7 @@ const BankStatementReportScreen = () => {
     try {
       const res = await transactionsAPI.getBankStatementReport(statementId);
       setReport(res.data);
-    } catch (err) {
-      console.error('Error fetching report:', err);
+    } catch {
       Alert.alert('Error', 'Failed to load report');
     } finally {
       setLoading(false);
@@ -160,7 +158,6 @@ const BankStatementReportScreen = () => {
       Alert.alert('Success', 'Category created and transaction updated');
       closeEditModal();
     } catch (err) {
-      console.error('Error creating category:', err);
       const msg = err.response?.data?.message || err.message || 'Failed to create category';
       Alert.alert('Error', msg);
     } finally {
@@ -186,7 +183,6 @@ const BankStatementReportScreen = () => {
       Alert.alert('Success', 'Transaction updated successfully');
       closeEditModal();
     } catch (err) {
-      console.error('Transaction update error:', err);
       const msg = err.response?.data?.message || err.message || 'Failed to update transaction';
       Alert.alert('Error', msg);
     } finally {

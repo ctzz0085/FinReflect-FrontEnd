@@ -66,7 +66,6 @@ const ManageTransactionsScreen = () => {
         setExpenseTransactions(response.data || []);
       }
     } catch (err) {
-      console.error('Error fetching data', err);
       const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch data';
       Alert.alert('Error', errorMsg);
     } finally {
@@ -78,8 +77,7 @@ const ManageTransactionsScreen = () => {
     try {
       const response = await transactionsAPI.getExpenseCategories();
       setCategories(response.data || []);
-    } catch (err) {
-      console.error('Error fetching categories', err);
+    } catch {
     }
   };
 
@@ -87,8 +85,7 @@ const ManageTransactionsScreen = () => {
     try {
       const response = await transactionsAPI.getIncomeCategories();
       setIncomeCategories(response.data || []);
-    } catch (err) {
-      console.error('Error fetching income categories', err);
+    } catch {
     }
   };
 
@@ -113,7 +110,6 @@ const ManageTransactionsScreen = () => {
               await fetchData();
               Alert.alert('Success', 'Income deleted successfully');
             } catch (err) {
-              console.error('Error deleting income', err);
               const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Failed to delete income';
               Alert.alert('Error', errorMsg);
             } finally {
@@ -146,7 +142,6 @@ const ManageTransactionsScreen = () => {
               await fetchData();
               Alert.alert('Success', 'Expense deleted successfully');
             } catch (err) {
-              console.error('Error deleting expense', err);
               const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Failed to delete expense';
               Alert.alert('Error', errorMsg);
             } finally {
@@ -225,7 +220,6 @@ const ManageTransactionsScreen = () => {
       await fetchData();
       Alert.alert('Success', 'Transaction updated successfully');
     } catch (err) {
-      console.error('Error updating transaction', err);
       const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Failed to update transaction';
       Alert.alert('Error', errorMsg);
     } finally {
@@ -273,7 +267,6 @@ const ManageTransactionsScreen = () => {
       }
       Alert.alert('Success', 'Income added successfully');
     } catch (err) {
-      console.error('Error adding income', err);
       const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Failed to add income';
       Alert.alert('Error', errorMsg);
     } finally {
@@ -321,7 +314,6 @@ const ManageTransactionsScreen = () => {
       }
       Alert.alert('Success', 'Expense added successfully');
     } catch (err) {
-      console.error('Error adding expense', err);
       const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Failed to add expense';
       Alert.alert('Error', errorMsg);
     } finally {

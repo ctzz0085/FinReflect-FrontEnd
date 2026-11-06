@@ -61,7 +61,7 @@ const IncomeHistory = () => {
     setExpandedCategories(new Set());
     transactionsAPI.getIncomeTransactions(buildParams())
       .then((res) => setIncomeList(res.data || []))
-      .catch((err) => console.error('Error fetching income history', err))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [refreshKey, filterMode, customSubmitted]);
 

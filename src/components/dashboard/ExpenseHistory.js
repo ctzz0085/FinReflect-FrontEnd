@@ -65,7 +65,7 @@ const ExpenseHistory = () => {
     setExpandedCategories(new Set());
     transactionsAPI.getExpenseTransactions(buildParams())
       .then((res) => setExpenses(res.data || []))
-      .catch((err) => console.error('Error fetching expense history', err))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [refreshKey, filterMode, customSubmitted]);
 

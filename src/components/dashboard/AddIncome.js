@@ -19,7 +19,6 @@ import { transactionsAPI } from '../../api/transactions';
 const AddIncome = ({ onRefresh }) => {
   const { user } = useAuth();
   const { refreshKey } = useTab();
-  console.log('AddIncome: user =', user, 'userId =', user?.userId);
 
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -44,7 +43,6 @@ const AddIncome = ({ onRefresh }) => {
         return userCategories;
       })
       .catch((err) => {
-        console.error('Error fetching income categories', err);
         return [];
       })
       .finally(() => setCategoriesLoading(false));
@@ -98,12 +96,10 @@ const AddIncome = ({ onRefresh }) => {
       category: { name: selectedCategory.name },
     };
 
-    console.log('AddIncome payload:', JSON.stringify(payload, null, 2));
 
     setLoading(true);
     try {
       const res = await transactionsAPI.addIncome(payload);
-      console.log('AddIncome success:', res?.data);
       Alert.alert('Success', 'Income added successfully \u2705');
       setAmount('');
       setDescription('');
@@ -111,8 +107,6 @@ const AddIncome = ({ onRefresh }) => {
       setSelectedCategory(null);
       if (onRefresh) onRefresh();
     } catch (err) {
-      console.error('AddIncome error status:', err.response?.status);
-      console.error('AddIncome error data:', JSON.stringify(err.response?.data));
       const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to add income';
       Alert.alert('Error', msg);
     } finally {

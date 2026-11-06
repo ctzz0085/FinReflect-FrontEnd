@@ -18,14 +18,12 @@ const FinancialAnalysisScreen = () => {
   const [toDate, setToDate] = useState('');
 
   const handleGenerate = async () => {
-    console.log('Generate button clicked');
     setLoading(true);
     setError(null);
     setAnalysis(null);
 
     try {
       const response = await transactionsAPI.getFinancialAnalysis(fromDate, toDate);
-      console.log('API response received:', response);
       const data = response.data;
       
       if (data?.message?.toLowerCase().includes('not enough data')) {
@@ -34,7 +32,6 @@ const FinancialAnalysisScreen = () => {
         setAnalysis(data);
       }
     } catch (err) {
-      console.error('Error fetching financial analysis', err);
       const msg = err?.response?.data?.message || err?.response?.data?.error || err.message || 'Analysis service temporarily unavailable. Please try again later.';
       setError(msg);
     } finally {
