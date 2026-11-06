@@ -33,7 +33,6 @@ api.interceptors.request.use(
       }
     }
     
-    console.log('Token:', token ? 'Bearer ' + token.substring(0, 20) + '...' : 'No token');
     console.log('User:', user);
     
     if (token) {
@@ -47,7 +46,6 @@ api.interceptors.request.use(
       console.warn('No userId found in user object!');
     }
     
-    console.log('Final headers:', JSON.stringify(config.headers, null, 2));
     console.log('==================');
     
     return config;
@@ -64,7 +62,6 @@ api.interceptors.response.use(
     if (!error?.config?.url?.startsWith('/auth/')) {
       console.log('Request Data:', JSON.stringify(error?.config?.data));
     }
-    console.log('Request Headers:', JSON.stringify(error?.config?.headers));
     
     if (error?.response?.status === 401) {
       console.log('401 Unauthorized - logging out');

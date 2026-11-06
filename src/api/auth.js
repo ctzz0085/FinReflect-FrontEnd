@@ -1,16 +1,6 @@
 import api from './client';
 
 export const authAPI = {
-  register: async ({ email, phoneNumber, password }) => {
-    const res = await api.post('/auth/register', {
-      applicationId: 'finadvisor-web',
-      email,
-      phoneNumber,
-      password,
-    });
-    return res.data;
-  },
-
   login: async ({ email, password }) => {
     const res = await api.post('/auth/login', {
       applicationId: 'finadvisor-web',
