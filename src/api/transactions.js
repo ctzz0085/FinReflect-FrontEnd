@@ -50,6 +50,7 @@ export const transactionsAPI = {
     timeout: 120000,
   }),
   getBankStatementReport: (statementId) => api.get(`/analysis/bank-statement/report?statementId=${statementId}`),
+  getAverageDailySpend: (statementId) => api.get(`/analysis/bank-statement/average-daily-spend?statementId=${statementId}`),
   getBankStatementHistory: () => api.get('/analysis/bank-statement/history'),
   deleteBankStatement: (statementId) => api.delete(`/analysis/bank-statement/${statementId}`),
   

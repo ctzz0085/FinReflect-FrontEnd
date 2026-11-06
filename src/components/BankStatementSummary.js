@@ -6,6 +6,7 @@ import {
   View,
 } from 'react-native';
 import { colors } from '../theme/colors';
+import AverageDailySpendCard from './AverageDailySpendCard';
 import CategoryDonut from './CategoryDonut';
 import NeedsReviewNotice from './NeedsReviewNotice';
 
@@ -55,6 +56,10 @@ const BankStatementSummary = ({ reportData, onReviewPress }) => {
           <Text style={styles.chartTitle}>Expense by Category</Text>
           <CategoryDonut key="expense" data={expenseCategories} />
         </View>
+      )}
+
+      {chartTab === 'expense' && (
+        <AverageDailySpendCard statementId={reportData.statementId} refreshKey={reportData.totalExpense} />
       )}
 
       {chartTab === 'income' && incomeCategories.length > 0 && (

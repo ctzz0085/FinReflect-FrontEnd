@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 // import { BarChart } from 'react-native-chart-kit'; // Bar chart is commented out below.
 import { transactionsAPI } from '../../api/transactions';
+import AverageDailySpendCard from '../../components/AverageDailySpendCard';
 import CategoryDonut from '../../components/CategoryDonut';
 import NeedsReviewNotice from '../../components/NeedsReviewNotice';
 import TransactionsSection from '../../components/TransactionsSection';
@@ -556,6 +557,10 @@ const BankStatementScreen = () => {
             </View>
           );
         })()}
+
+        {chartTab === 'expense' && (
+          <AverageDailySpendCard statementId={data.statementId} refreshKey={data.totalExpense} />
+        )}
 
         {/* AI Summary card: disabled, kept for reference.
             Why it existed: to show a written overview of the statement under the charts.
