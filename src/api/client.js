@@ -28,20 +28,22 @@ api.interceptors.request.use(
       console.log('=== API REQUEST ===');
       console.log('Method:', config.method?.toUpperCase());
       console.log('URL:', config.baseURL + config.url);
-      console.log('Request Body:', JSON.stringify(config.data, null, 2));
+      if (!config.url?.startsWith('/auth/')) {
+        console.log('Request Body:', JSON.stringify(config.data, null, 2));
+      }
     }
     
     console.log('Token:', token ? 'Bearer ' + token.substring(0, 20) + '...' : 'No token');
     console.log('User:', user);
     
-    if (token && token !== 'dev-admin-token') {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    if (user?.userId && token !== 'dev-admin-token') {
+    if (user?.userId) {
       config.headers['X-User-Id'] = user.userId.toString();
       console.log('X-User-Id header set to:', user.userId);
-    } else if (token !== 'dev-admin-token') {
+    } else {
       console.warn('No userId found in user object!');
     }
     
@@ -59,15 +61,14 @@ api.interceptors.response.use(
     console.log('API Response Error:', error?.response?.status, error?.response?.statusText);
     console.log('Error URL:', error?.config?.url);
     console.log('Error Data:', JSON.stringify(error?.response?.data));
-    console.log('Request Data:', JSON.stringify(error?.config?.data));
+    if (!error?.config?.url?.startsWith('/auth/')) {
+      console.log('Request Data:', JSON.stringify(error?.config?.data));
+    }
     console.log('Request Headers:', JSON.stringify(error?.config?.headers));
     
     if (error?.response?.status === 401) {
-      const token = await getToken();
-      if (token !== 'dev-admin-token') {
-        console.log('401 Unauthorized - logging out');
-        logout();
-      }
+      console.log('401 Unauthorized - logging out');
+      logout();
     }
     return Promise.reject(error);
   }

@@ -20,6 +20,14 @@ export const authAPI = {
     return res.data;
   },
 
+  googleLogin: async (idToken) => {
+    const res = await api.post('/auth/google', {
+      applicationId: 'finadvisor-web',
+      idToken,
+    });
+    return res.data;
+  },
+
   forgotPassword: async (identifier) => {
     const res = await api.post('/auth/forgot-password', {
       applicationId: 'finadvisor-web',
